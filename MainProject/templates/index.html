@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="jumbotron text-center">
+  <div class="container">
+    <h1>Расписание</h1>
+  </div>
+</div>
+
+<table id='timetable'>
+  <tr>
+    <td>...</td>
+
+        {% for day in form.days %}
+          <td>{{ day.day_of_week }}</td>
+        {% endfor %}
+
+    
+  </tr>
+  <tr>
+    <td>...</td>
+      
+        {% for day in form.days %}
+          <td>{{ day.day_of_month }}</td>
+        {% endfor %}
+  </tr>
+
+  {% for user in form.users %}
+    <tr>
+      <td>
+        {{ user.name }}
+      </td>
+      {% for day in user.get_choises %}
+        <td>
+          <span class={{ day }}></span>
+        </td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+
+</table>
+
+
+
+
+
+
+<script type="text/javascript" >
+
+function send_coords(x, y) {
+    $.ajax({
+        url : "/", // the endpoint
+        type : "POST", // http method
+        data : { x : x,
+                 y : y,
+                 csrfmiddlewaretoken: "{{ csrf_token }}" }, // data sent with the post request
+        
+        // handle a successful response
+        success : function(json) {
+            table = document.getElementById('timetable');
+            cell = table.rows[y].cells[x].getElementsByTagName('span')[0]
+            if((x >= json.MIN_X) && (y >= json.MIN_Y)){
+              cell.className = json.STATE;
+            }
+            
+            //location.reload();
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+};
+
+$('td').click(function(){
+    send_coords(this.cellIndex, this.parentNode.rowIndex)
+});
+
+</script>
+{{settings.MIN_X}}
+{% endblock %}
